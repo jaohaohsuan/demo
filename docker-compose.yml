@@ -1,0 +1,42 @@
+web:
+  image: larryyangsen/inu_frontend 
+  ports:
+   - "80:80"
+  links:
+   - api
+dataB:
+  image: jaohaohsuan/elasticsearch
+  command: elasticsearch -Des.cluster.name="inu-dc"
+dataA:
+  image: jaohaohsuan/elasticsearch
+  command: elasticsearch -Des.cluster.name="inu-dc"
+client:
+  image: jaohaohsuan/elasticsearch
+  command: elasticsearch -Des.cluster.name="inu-dc" -Des.node.client="true"
+  ports:
+   - "9200:9200"
+  links:
+   - dataA
+   - dataB
+cht:
+  image: jaohaohsuan/stt-input
+  command: logstash -f /config-dir/cht.conf
+  volumes:
+   - /stt/cht:/data
+   - /stt-conf:/config-dir/
+  links:
+   - api
+ytx:
+  image: jaohaohsuan/stt-input
+  command: logstash -f /config-dir/ytx.conf
+  volumes:
+   - /stt/ytx:/data
+   - /stt-conf:/config-dir/
+  links:
+   - api
+api:
+  image: jaohaohsuan/inu-alpha:v1.1.0
+  ports:
+   - "7879:7879"
+  links:
+   - client
